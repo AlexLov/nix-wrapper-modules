@@ -9,7 +9,7 @@
 let
   inherit (tlib)
     fileContains
-    fileNotContains
+    notFileContains
     test
     ;
   wm = self.wrappers.difftastic;
@@ -31,8 +31,8 @@ test { wrapper = "difftastic"; } {
       };
     in
     [
-      (fileNotContains "${wrapper}/bin/difft" "DFT_")
-      (fileNotContains "${wrapper}/bin/difft" "--override")
+      (notFileContains "${wrapper}/bin/difft" "DFT_")
+      (notFileContains "${wrapper}/bin/difft" "--override")
     ];
 
   "If common settings set wrapper script should have DFT_ variable(s)" =
