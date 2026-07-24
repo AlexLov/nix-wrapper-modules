@@ -184,7 +184,7 @@ of the wrapper (if any) and ensure that the tests are only run on the required p
 let
   inherit (tlib)
     fileContains
-    fileNotContains
+    notFileContains
     isDirectory
     isFile
     notIsFile
@@ -254,7 +254,7 @@ except you don't provide a wrapper but a name:
 let
   inherit (tlib)
     fileContains
-    fileNotContains
+    notFileContains
     isDirectory
     isFile
     notIsFile

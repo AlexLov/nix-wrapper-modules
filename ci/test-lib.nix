@@ -326,7 +326,7 @@ in
 
     # Type
     ```
-    fileNotContains :: String -> String -> Assertion
+    notFileContains :: String -> String -> Assertion
     ```
 
     # Arguments
@@ -336,7 +336,7 @@ in
     pattern
     : Extended regular expression to search for.
   */
-  fileNotContains = file: pattern: {
+  notFileContains = file: pattern: {
     cond = ''! grep -Eq -- '${pattern}' "${file}"'';
     msg = "Pattern '${pattern}' found in ${file}";
   };
