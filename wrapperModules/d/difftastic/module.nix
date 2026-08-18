@@ -1,4 +1,10 @@
-{ lib, wlib, pkgs, config, ... }:
+{
+  lib,
+  wlib,
+  pkgs,
+  config,
+  ...
+}:
 let
   mkEnvVarName = name: "DFT_${lib.replaceString "-" "_" (lib.toUpper name)}";
 
@@ -14,26 +20,32 @@ let
       throw "Unrecognized type ${builtins.typeOf value} in difftastic settings";
 
   # converts single-attribute attrset to a string
-  mkOverrideValue = lib.attrsets.foldlAttrs (_: name: value: "${name}:${value}") "";
+  mkOverrideValue = lib.attrsets.foldlAttrs (
+    _: name: value:
+    "${name}:${value}"
+  ) "";
 
   settingsToEnv = lib.pipe config.settings [
     (lib.filterAttrs (_: value: value != null)) # settings with null values do not need to be handled
-    (lib.filterAttrs (name: _: ! lib.hasPrefix "override" name)) # override* settings need special handling
-    (lib.mapAttrs' (
-      name: value: lib.nameValuePair (mkEnvVarName name) (mkEnvVarValue value)
-    ))
+    (lib.filterAttrs (name: _: !lib.hasPrefix "override" name)) # override* settings need special handling
+    (lib.mapAttrs' (name: value: lib.nameValuePair (mkEnvVarName name) (mkEnvVarValue value)))
   ];
 in
 {
   imports = [ wlib.modules.default ];
   options.settings = {
     background = lib.mkOption {
-      type = lib.types.nullOr (lib.types.enum [ "dark" "light" ]);
+      type = lib.types.nullOr (
+        lib.types.enum [
+          "dark"
+          "light"
+        ]
+      );
       default = null;
       description = ''
-       Set the background brightness.
-       Difftastic will prefer brighter colours on dark backgrounds.
-     '';
+        Set the background brightness.
+        Difftastic will prefer brighter colours on dark backgrounds.
+      '';
     };
     byte-limit = lib.mkOption {
       type = lib.types.nullOr lib.types.ints.unsigned;
@@ -50,7 +62,13 @@ in
       '';
     };
     color = lib.mkOption {
-      type = lib.types.nullOr (lib.types.enum ["always" "auto" "never"]);
+      type = lib.types.nullOr (
+        lib.types.enum [
+          "always"
+          "auto"
+          "never"
+        ]
+      );
       default = null;
       description = ''
         When to use color output: always, auto, never.
@@ -115,18 +133,18 @@ in
       # Order for this option is important but uting just plaintext list doesn't look good nor
       # efficient thus this type
       type = lib.types.attrListOf lib.types.str;
-      default = [];
+      default = [ ];
       example = lib.literalExpression ''
-      lib.mkMerge [
-        {
-          "*.data" = lib.mkAfter "text";
-          "*.c" = lib.mkBefore "C++";
-        };
-        [
-          { "*.js" = "javascript jsx" }
-          { "CustomFile" = "json" };
-        ]
-      ]'';
+        lib.mkMerge [
+          {
+            "*.data" = lib.mkAfter "text";
+            "*.c" = lib.mkBefore "C++";
+          };
+          [
+            { "*.js" = "javascript jsx" }
+            { "CustomFile" = "json" };
+          ]
+        ]'';
       description = ''
         Associate this glob pattern with this language, overriding normal language detection.
 
@@ -144,12 +162,13 @@ in
     };
     override-binary = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      default = [];
-      example = lib.literalExpression ''[
-        "*.gz"
-        "foo.pickle"
-        "*.data"
-      ]'';
+      default = [ ];
+      example = lib.literalExpression ''
+        [
+                "*.gz"
+                "foo.pickle"
+                "*.data"
+              ]'';
       description = ''
         Always treat file names matching this glob as binary files,
         ignoring the default heuristics for binary detection.
@@ -177,7 +196,12 @@ in
       '';
     };
     strip-cr = lib.mkOption {
-      type = lib.types.nullOr (lib.types.enum ["on" "off" ]);
+      type = lib.types.nullOr (
+        lib.types.enum [
+          "on"
+          "off"
+        ]
+      );
       default = null;
       description = ''
         Remove any carriage return characters before diffing.
@@ -185,7 +209,12 @@ in
       '';
     };
     syntax-highlight = lib.mkOption {
-      type = lib.types.nullOr (lib.types.enum ["on" "off" ]);
+      type = lib.types.nullOr (
+        lib.types.enum [
+          "on"
+          "off"
+        ]
+      );
       default = null;
       description = ''
         Enable or disable syntax highlighting.
@@ -221,13 +250,20 @@ in
   config = {
     package = lib.mkDefault pkgs.difftastic;
     envDefault = settingsToEnv;
-    flags."--override" = { ifs = null; sep = "="; data = map mkOverrideValue config.settings.override; };
-    flags."--override-binary" = { ifs = null; sep = "="; data = config.settings.override-binary; };
+    flags."--override" = {
+      ifs = null;
+      sep = "=";
+      data = map mkOverrideValue config.settings.override;
+    };
+    flags."--override-binary" = {
+      ifs = null;
+      sep = "=";
+      data = config.settings.override-binary;
+    };
 
     # min-width is need to be calculated in runtime
-    runShell =
-      lib.mkIf (config.settings.min-width != null && config.settings.width == null) [
-        /* bash */ ''
+    runShell = lib.mkIf (config.settings.min-width != null && config.settings.width == null) [
+      /* bash */ ''
         POSITIONAL=()
         while [[ $# -gt 0 ]]; do
           key="$1"
